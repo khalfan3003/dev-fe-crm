@@ -1,0 +1,110 @@
+<div class="crm-container">
+  <!-- Top Navbar -->
+  <header class="crm-navbar">
+    <div class="brand">
+      <i class="pi pi-bolt brand-icon"></i>
+      <div>
+        <h1>Dev CRM Suite</h1>
+        <span class="subtext">Angular 19 & PrimeNG + Quarkus Backend</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <p-button 
+        label="Test Quarkus API" 
+        icon="pi pi-refresh" 
+        [loading]="backendLoading"
+        (onClick)="checkBackendConnection()" 
+        severity="contrast" 
+        [outlined]="true" />
+    </div>
+  </header>
+
+  <!-- Quarkus Backend Connection Banner -->
+  <div class="backend-banner" [ngClass]="{'connected': backendConnected === true, 'disconnected': backendConnected === false, 'idle': backendConnected === null}">
+    <i class="pi" [ngClass]="{'pi-check-circle': backendConnected === true, 'pi-exclamation-circle': backendConnected === false, 'pi-info-circle': backendConnected === null}"></i>
+    <div>
+      <strong>Backend Status (Port 8080):</strong> {{ quarkusMessage }}
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon leads"><i class="pi pi-users"></i></div>
+      <div class="metric-info">
+        <span class="metric-label">Total Leads</span>
+        <span class="metric-value">1,248</span>
+      </div>
+      <span class="metric-growth positive">+12.4% this month</span>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon deals"><i class="pi pi-briefcase"></i></div>
+      <div class="metric-info">
+        <span class="metric-label">Active Deals</span>
+        <span class="metric-value">42</span>
+      </div>
+      <span class="metric-growth neutral">8 closing soon</span>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon revenue"><i class="pi pi-dollar"></i></div>
+      <div class="metric-info">
+        <span class="metric-label">Pipeline Value</span>
+        <span class="metric-value">$155,700</span>
+      </div>
+      <span class="metric-growth positive">+18.2% vs Q2</span>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon stack"><i class="pi pi-server"></i></div>
+      <div class="metric-info">
+        <span class="metric-label">Stack Health</span>
+        <span class="metric-value">Quarkus + PrimeNG</span>
+      </div>
+      <span class="metric-growth active">Ready for development</span>
+    </div>
+  </div>
+
+  <!-- CRM Leads PrimeNG Data Table -->
+  <div class="table-container">
+    <div class="table-header">
+      <div>
+        <h2>Active Customer Deals</h2>
+        <p>Recent opportunities synchronized with your CRM backend</p>
+      </div>
+      <div class="table-actions">
+        <p-button label="Add Lead" icon="pi pi-plus" size="small" />
+      </div>
+    </div>
+
+    <p-table [value]="leads" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-striped">
+      <ng-template #header>
+        <tr>
+          <th>ID</th>
+          <th>Contact Name</th>
+          <th>Company</th>
+          <th>Email Address</th>
+          <th>Deal Value</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-lead>
+        <tr>
+          <td><span class="lead-id">#{{ lead.id }}</span></td>
+          <td><strong>{{ lead.name }}</strong></td>
+          <td>{{ lead.company }}</td>
+          <td><a [href]="'mailto:' + lead.email" class="email-link">{{ lead.email }}</a></td>
+          <td><strong class="value-text">{{ lead.dealValue }}</strong></td>
+          <td>
+            <p-tag [value]="lead.status" [severity]="getSeverity(lead.status)" />
+          </td>
+          <td style="text-align: right;">
+            <p-button icon="pi pi-ellipsis-v" [rounded]="true" [text]="true" severity="secondary" size="small" />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
