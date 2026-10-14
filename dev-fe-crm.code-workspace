@@ -1,13 +1,11 @@
 {
-	"folders": [
-		{
-			"name": "dev-fe-crm",
-			"path": "."
-		},
-		{
-			"name": "dev-be-crm",
-			"path": "../dev-be-crm"
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": "../dev-be-crm"
+        },
+        {
+            "name": "dev-fe-crm-1",
+            "path": "../dev-fe-crm-1"
+        }
+    ]
 }
