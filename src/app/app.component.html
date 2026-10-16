@@ -1,110 +1,159 @@
 <div class="crm-container">
+  <p-toast />
+  <p-confirmDialog />
+
   <!-- Top Navbar -->
   <header class="crm-navbar">
     <div class="brand">
-      <i class="pi pi-bolt brand-icon"></i>
+      <div class="brand-avatar">
+        <i class="pi pi-box"></i>
+      </div>
       <div>
-        <h1>Dev CRM Suite</h1>
-        <span class="subtext">Angular 19 & PrimeNG + Quarkus Backend</span>
+        <h1>Dev CRM Studio</h1>
+        <span class="subtext">Angular 19 & PrimeNG Aura &bull; Quarkus OpenAPI Backend</span>
       </div>
     </div>
     <div class="nav-actions">
       <p-button 
-        label="Test Quarkus API" 
+        label="Sync API" 
         icon="pi pi-refresh" 
         [loading]="backendLoading"
         (onClick)="checkBackendConnection()" 
-        severity="contrast" 
+        severity="secondary" 
         [outlined]="true" />
+      <p-button 
+        label="Add Organization" 
+        icon="pi pi-plus" 
+        (onClick)="openNewOrgDialog()" 
+        severity="primary" />
     </div>
   </header>
 
-  <!-- Quarkus Backend Connection Banner -->
+  <!-- Backend Health & Live Greeting -->
   <div class="backend-banner" [ngClass]="{'connected': backendConnected === true, 'disconnected': backendConnected === false, 'idle': backendConnected === null}">
-    <i class="pi" [ngClass]="{'pi-check-circle': backendConnected === true, 'pi-exclamation-circle': backendConnected === false, 'pi-info-circle': backendConnected === null}"></i>
-    <div>
-      <strong>Backend Status (Port 8080):</strong> {{ quarkusMessage }}
+    <i class="pi" [ngClass]="{'pi-check-circle': backendConnected === true, 'pi-exclamation-circle': backendConnected === false, 'pi-spin pi-spinner': backendConnected === null}"></i>
+    <div class="banner-content">
+      <strong>Quarkus API (http://localhost:8080/hello):</strong> 
+      <span>{{ backendGreeting || 'Connecting...' }}</span>
     </div>
+    <span class="tag-status" *ngIf="backendConnected">MySQL Connected</span>
   </div>
 
   <!-- Metric Overview Cards -->
   <div class="metrics-grid">
     <div class="metric-card">
-      <div class="metric-icon leads"><i class="pi pi-users"></i></div>
+      <div class="metric-icon orgs"><i class="pi pi-building"></i></div>
       <div class="metric-info">
-        <span class="metric-label">Total Leads</span>
-        <span class="metric-value">1,248</span>
+        <span class="metric-label">Organizations in DB</span>
+        <span class="metric-value">{{ organizations.length }}</span>
       </div>
-      <span class="metric-growth positive">+12.4% this month</span>
+      <span class="metric-growth positive">Active in MySQL</span>
     </div>
 
     <div class="metric-card">
-      <div class="metric-icon deals"><i class="pi pi-briefcase"></i></div>
+      <div class="metric-icon spec"><i class="pi pi-file"></i></div>
       <div class="metric-info">
-        <span class="metric-label">Active Deals</span>
-        <span class="metric-value">42</span>
+        <span class="metric-label">OpenAPI Spec</span>
+        <span class="metric-value">v1.0.0</span>
       </div>
-      <span class="metric-growth neutral">8 closing soon</span>
+      <span class="metric-growth active"><a href="http://localhost:8080/q/swagger-ui" target="_blank">Swagger UI &rarr;</a></span>
     </div>
 
     <div class="metric-card">
-      <div class="metric-icon revenue"><i class="pi pi-dollar"></i></div>
+      <div class="metric-icon stack"><i class="pi pi-code"></i></div>
       <div class="metric-info">
-        <span class="metric-label">Pipeline Value</span>
-        <span class="metric-value">$155,700</span>
+        <span class="metric-label">Theme Engine</span>
+        <span class="metric-value">PrimeNG Aura</span>
       </div>
-      <span class="metric-growth positive">+18.2% vs Q2</span>
-    </div>
-
-    <div class="metric-card">
-      <div class="metric-icon stack"><i class="pi pi-server"></i></div>
-      <div class="metric-info">
-        <span class="metric-label">Stack Health</span>
-        <span class="metric-value">Quarkus + PrimeNG</span>
-      </div>
-      <span class="metric-growth active">Ready for development</span>
+      <span class="metric-growth neutral">Angular 19 Standalone</span>
     </div>
   </div>
 
-  <!-- CRM Leads PrimeNG Data Table -->
+  <!-- PrimeNG Data Table -->
   <div class="table-container">
     <div class="table-header">
       <div>
-        <h2>Active Customer Deals</h2>
-        <p>Recent opportunities synchronized with your CRM backend</p>
+        <h2>Organizations</h2>
+        <p>Live database records fetched from <code>/api/organizations</code></p>
       </div>
       <div class="table-actions">
-        <p-button label="Add Lead" icon="pi pi-plus" size="small" />
+        <p-button 
+          icon="pi pi-sync" 
+          [rounded]="true" 
+          [text]="true" 
+          (onClick)="loadOrganizations()" 
+          [loading]="orgLoading" 
+          title="Reload table" />
       </div>
     </div>
 
-    <p-table [value]="leads" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-striped">
+    <p-table 
+      [value]="organizations" 
+      [loading]="orgLoading"
+      [tableStyle]="{ 'min-width': '40rem' }" 
+      styleClass="p-datatable-striped">
       <ng-template #header>
         <tr>
-          <th>ID</th>
-          <th>Contact Name</th>
-          <th>Company</th>
-          <th>Email Address</th>
-          <th>Deal Value</th>
-          <th>Status</th>
-          <th style="text-align: right;">Action</th>
+          <th style="width: 100px;">ID</th>
+          <th>Organization Name</th>
+          <th style="width: 150px; text-align: right;">Actions</th>
         </tr>
       </ng-template>
-      <ng-template #body let-lead>
+      <ng-template #body let-org>
         <tr>
-          <td><span class="lead-id">#{{ lead.id }}</span></td>
-          <td><strong>{{ lead.name }}</strong></td>
-          <td>{{ lead.company }}</td>
-          <td><a [href]="'mailto:' + lead.email" class="email-link">{{ lead.email }}</a></td>
-          <td><strong class="value-text">{{ lead.dealValue }}</strong></td>
-          <td>
-            <p-tag [value]="lead.status" [severity]="getSeverity(lead.status)" />
-          </td>
+          <td><span class="org-id">#{{ org.id }}</span></td>
+          <td><strong>{{ org.name }}</strong></td>
           <td style="text-align: right;">
-            <p-button icon="pi pi-ellipsis-v" [rounded]="true" [text]="true" severity="secondary" size="small" />
+            <p-button 
+              icon="pi pi-pencil" 
+              [rounded]="true" 
+              [text]="true" 
+              severity="secondary" 
+              size="small"
+              (onClick)="editOrg(org)" 
+              title="Edit" />
+            <p-button 
+              icon="pi pi-trash" 
+              [rounded]="true" 
+              [text]="true" 
+              severity="danger" 
+              size="small"
+              (onClick)="confirmDeleteOrg(org)" 
+              title="Delete" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="3" class="empty-state">
+            <i class="pi pi-database" style="font-size: 2rem; color: #94a3b8; margin-bottom: 0.5rem; display: block;"></i>
+            No organizations found. Click "Add Organization" to create one.
           </td>
         </tr>
       </ng-template>
     </p-table>
   </div>
+
+  <!-- Add/Edit Organization Dialog -->
+  <p-dialog 
+    [(visible)]="orgDialog" 
+    [header]="isEditMode ? 'Edit Organization' : 'Create Organization'" 
+    [modal]="true" 
+    [style]="{ width: '420px' }">
+    <div class="dialog-body">
+      <label for="orgName" class="form-label">Organization Name</label>
+      <input 
+        id="orgName" 
+        type="text" 
+        pInputText 
+        [(ngModel)]="currentOrg.name" 
+        placeholder="e.g. Acme Corp" 
+        class="w-full"
+        (keyup.enter)="saveOrganization()" />
+    </div>
+    <ng-template #footer>
+      <p-button label="Cancel" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="orgDialog = false" />
+      <p-button label="Save" icon="pi pi-check" [loading]="savingOrg" (onClick)="saveOrganization()" severity="primary" />
+    </ng-template>
+  </p-dialog>
 </div>
